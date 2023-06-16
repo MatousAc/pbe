@@ -1,4 +1,4 @@
-<script lang='ts'>
+<script lang="ts">
 import { onMount } from 'svelte'
 import Row from '$comp/Row.svelte'
 
@@ -18,11 +18,11 @@ onMount(() => {
 })
 </script>
 
-<Row {justify} class='mr-4'>
-  <label for={name} class='mr-2 {name ? '' : 'hidden'}'>
+<Row {justify} class="mr-4 mt-0">
+  <label for={name} class="mr-2 {name ? '' : 'hidden'}">
     {label}
   </label>
-  <select {name} bind:this={select} bind:value={value} on:change class='rounded-lg p-2'>
+  <select {name} bind:this={select} bind:value on:change class="rounded-lg p-2">
     {#each options as { name, value }}
       <option {value}>{name}</option>
     {/each}

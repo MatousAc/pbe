@@ -3,7 +3,6 @@ import H1 from '$comp/H1.svelte'
 import H2 from '$comp/H2.svelte'
 import P from '$comp/P.svelte'
 import Select from '$comp/Select.svelte'
-import TextMedia from '$comp/TextMedia.svelte'
 import Button from '$comp/Button.svelte'
 import Row from '$/components/Row.svelte'
 import { loadProgress, models, loadModel, generateQuestion } from '$/ts/model'
@@ -85,9 +84,9 @@ const truncateText = (text: string) => {
   />
 </div>
 <div>
-  <H2>Select a text to generate questions on.</H2>
+  <H2>Select a text.</H2>
   {#await lazyNKJV() then}
-    <Row justify="flex-start" align="left">
+    <Row justify="flex-start" align="left" class="flex-col my-0 md:flex-row">
       <Select
         justify="flex-start"
         bind:value={book}

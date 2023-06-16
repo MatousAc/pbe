@@ -10,7 +10,7 @@ export let next = 'none'
       <HeroIcon name="previous" class="text-4xl" />
     </a>
   {/if}
-  <h2 class="text-2xl text-left"><slot /></h2>
+  <h2 class="text-xl text-left"><slot /></h2>
   <a href={next}>
     {#if next != 'none'}
       <HeroIcon name="next" class="text-4xl" />
