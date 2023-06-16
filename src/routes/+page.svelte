@@ -1,21 +1,26 @@
-<script lang='ts'>
+<script lang="ts">
+import H1 from '$comp/H1.svelte'
 import H2 from '$comp/H2.svelte'
 import P from '$comp/P.svelte'
 import Select from '$comp/Select.svelte'
 import TextMedia from '$comp/TextMedia.svelte'
 import Button from '$comp/Button.svelte'
 import Row from '$/components/Row.svelte'
-import { loadProgress, loadModel, generateQuestion } from '$/ts/model'
+import { loadProgress, models, loadModel, generateQuestion } from '$/ts/model'
 import { loadNKJV, getBooks, getChapters, getVerses, getText } from '$/ts/nkjv'
 
-let modelID = 'potsawee/t5-large-generation-squad-QuestionAnswer'
-let modelURL = 'https://storage.googleapis.com/aqg_onnx'
-let {book, chapter, startVerse, endVerse, text, result} = {
-  book: 'Genesis', chapter: '1', startVerse: '1', endVerse: '1', text: '', result: ''
+let { book, chapter, startVerse, endVerse, text, result, modelName } = {
+  book: 'Genesis',
+  chapter: '1',
+  startVerse: '1',
+  endVerse: '1',
+  text: '',
+  result: '',
+  modelName: 'test model'
 }
 let outputArea: HTMLTextAreaElement
 let progress: string = '0%'
-loadProgress.subscribe((p) => {
+loadProgress.subscribe(p => {
   progress = p
 })
 
@@ -23,8 +28,12 @@ let chapters: { name: string; value: string }[] = []
 let verses: { name: string; value: string }[] = []
 
 const updateText = () => {
-  text = getText(book, parseInt(chapter), parseInt(startVerse), 
-    parseInt(chapter), parseInt(endVerse)
+  text = getText(
+    book,
+    parseInt(chapter),
+    parseInt(startVerse),
+    parseInt(chapter),
+    parseInt(endVerse)
   )
 }
 
@@ -36,23 +45,23 @@ const lazyNKJV = async () => {
 }
 
 const lazyModel = async () => {
-  await loadModel(modelID, modelURL)
+  await loadModel(modelName)
   outputArea.innerHTML = await generateQuestion(text)
 }
 
 const truncateText = (text: string) => {
-  const sentences = text.trim().split('. ');
+  const sentences = text.trim().split('. ')
   if (sentences.length <= 2) {
-    return text;
+    return text
   }
 
-  const firstTwoSentences = sentences.slice(0, 2).join('. ');
+  const firstTwoSentences = sentences.slice(0, 2).join('. ')
 
-  const words = text.trim().split(/\s+/);
-  const lastEightWords = words.slice(-8).join(' ');
+  const words = text.trim().split(/\s+/)
+  const lastEightWords = words.slice(-8).join(' ')
 
-  const truncatedText = `${firstTwoSentences} ... ${lastEightWords}`;
-  return truncatedText;
+  const truncatedText = `${firstTwoSentences} ... ${lastEightWords}`
+  return truncatedText
 }
 </script>
 
@@ -60,69 +69,99 @@ const truncateText = (text: string) => {
   <title>PBE Question Generator</title>
 </svelte:head>
 
-<TextMedia>
-  <div slot='text'>
-    <H2>Select a text to generate questions on.</H2>
-    {#await lazyNKJV() then}
-    <Row justify='flex-start' align='left' class='lg:flex-col'>
-      <Select justify="flex-start" bind:value={book} name='book' options={getBooks()} on:change={() => {
-        chapters = getChapters(book)
-        chapter = '1'
-        updateText()
-      }} />
-      <Row justify='flex-start'>
-        <Select bind:value={chapter} name='chapter' options={chapters} on:change={() => {
-          verses = getVerses(book, chapter)
-        startVerse = '1'
-        endVerse = '1'
-        updateText()
-      }}/>
-      <H2>:</H2>
-      <Select bind:value={startVerse} name='startVerse' options={verses} on:change={() => {
-        if (parseInt(startVerse) > parseInt(endVerse)) {
-          endVerse = startVerse
-        }
-        updateText()
-      }}/>
-      <H2>-</H2>
-      <Select bind:value={endVerse} name='endVerse' options={verses} on:change={() => {
-        if (parseInt(startVerse) > parseInt(endVerse)) {
-          startVerse = endVerse
-        }
-        updateText()
-      }}/>
+<H1>Question Generator</H1>
+<div>
+  <p style="color: var(--dim)">
+    Please note that this tool is in development and does not yet produce good
+    questions and answers.
+  </p>
+  <H2>Select a model to use for question generation.</H2>
+  <Select
+    justify="flex-start"
+    name="modelName"
+    bind:value={modelName}
+    options={models.map(m => ({ name: m.name, value: m.name }))}
+    on:change={() => loadModel(modelName)}
+  />
+</div>
+<div>
+  <H2>Select a text to generate questions on.</H2>
+  {#await lazyNKJV() then}
+    <Row justify="flex-start" align="left">
+      <Select
+        justify="flex-start"
+        bind:value={book}
+        name="book"
+        options={getBooks()}
+        on:change={() => {
+          chapters = getChapters(book)
+          chapter = '1'
+          updateText()
+        }}
+      />
+      <Row justify="flex-start">
+        <Select
+          bind:value={chapter}
+          name="chapter"
+          options={chapters}
+          on:change={() => {
+            verses = getVerses(book, chapter)
+            startVerse = '1'
+            endVerse = '1'
+            updateText()
+          }}
+        />
+        <H2>:</H2>
+        <Select
+          bind:value={startVerse}
+          name="startVerse"
+          options={verses}
+          on:change={() => {
+            if (parseInt(startVerse) > parseInt(endVerse)) {
+              endVerse = startVerse
+            }
+            updateText()
+          }}
+        />
+        <H2>-</H2>
+        <Select
+          bind:value={endVerse}
+          name="endVerse"
+          options={verses}
+          on:change={() => {
+            if (parseInt(startVerse) > parseInt(endVerse)) {
+              startVerse = endVerse
+            }
+            updateText()
+          }}
+        />
       </Row>
     </Row>
     <P>
       {truncateText(text)}
     </P>
-    {/await}
-    <Row justify='between'>
+  {/await}
+  <Row justify="between">
     {#await lazyModel()}
-      <Button disabled class='mr-auto'>
+      <Button disabled class="mr-auto">
         Loading Model: {progress}
       </Button>
     {:then}
-      <Button onClick={async () => {
+      <Button
+        onClick={async () => {
           outputArea.innerHTML = await generateQuestion(text)
-        }} class='mr-auto'>
-        Generate Question
-      </Button>
-    {:catch error}
-      <Button onClick={async () => {
-          outputArea.innerHTML = await generateQuestion(text)
-        }} class='mr-auto'>
+        }}
+        class="mr-auto"
+      >
         Generate Question
       </Button>
     {/await}
-    </Row>
-  </div>
-  <textarea
-    bind:this={outputArea}
-    slot='media'
-    class='p-4 mx-4 md:m-0 bg-transparent rounded-lg h-60'
-  />
-</TextMedia>
+  </Row>
+</div>
+<textarea
+  bind:this={outputArea}
+  class="p-4 mx-4 md:m-0 bg-transparent rounded-lg h-60"
+/>
 
 <style>
 textarea {

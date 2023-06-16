@@ -1,6 +1,4 @@
 <script>
-import Fill from '$comp/Fill.svelte'
-
 export let reverse = false
 </script>
 

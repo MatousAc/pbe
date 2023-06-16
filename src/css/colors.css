@@ -5,6 +5,7 @@
   --center-bottom: #449ecf;
   --nav: #264863;
   --accent: #368f84;
+  --dim: #848484;
   --menu: var(--background);
   --mobile-link-background: var(--nav);
   --logo-primary: var(--background);
@@ -25,6 +26,7 @@
   --center-bottom: #7f7979;
   --nav: #17121f;
   --accent: #c9d1fe;
+  --dim: #594f67;
   --menu: var(--text);
   --mobile-link-background: var(--nav);
   --logo-primary: var(--text);
@@ -47,6 +49,7 @@
     --center-bottom: #449ecf;
     --nav: #264863;
     --accent: #368f84;
+    --dim: #848484;
     --menu: var(--background);
     --mobile-link-background: var(--nav);
     --logo-primary: var(--background);
@@ -70,6 +73,7 @@
     --center-bottom: #7f7979;
     --nav: #17121f;
     --accent: #c9d1fe;
+    --dim: #594f67;
     --menu: var(--text);
     --mobile-link-background: var(--nav);
     --logo-primary: var(--text);

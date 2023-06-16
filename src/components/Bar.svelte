@@ -41,7 +41,7 @@ onMount(() => {
     : ''}"
 >
   <!-- logo -->
-  <a class="logo p-2 md:p-0" href="/testimony">
+  <a class="logo p-2 md:p-0" href="https://achybl.com">
     <Logo class="w-16 md:w-20" />
   </a>
 

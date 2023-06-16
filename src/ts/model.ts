@@ -1,58 +1,44 @@
+import { loadModelPotT5, generateQuestionPotT5 } from './potT5'
 import { writable } from 'svelte/store'
-import { AutoTokenizer, T5ForConditionalGeneration } from 'web-transformers'
-
-let tokenizer: AutoTokenizer
-let model: T5ForConditionalGeneration
+// model load progress
 export let loadProgress = writable('0%')
 
-const generateProgress = async (
-  outputTokenIds: number[],
-  forInputIds: number[]
-) => {
-  let shouldContinue = true
-  return shouldContinue
-}
-const generationOptions = {
-  maxLength: 512,
-  topK: 10
-}
-
-// load the tokenizer and model
-export const loadModel = async (modelID: string, modelPath: string) => {
-  tokenizer = AutoTokenizer.fromPretrained(modelID, modelPath)
-  model = new T5ForConditionalGeneration(modelID, modelPath, async progress => {
-    console.log(`Loading network: ${Math.round(progress * 100)}%`)
-    loadProgress.set(`${Math.round(progress * 100)}%`)
-  })
-}
-
-const processQA = (inputString: string) => {
-  const parts = inputString.split('[32100]') // split string on separator
-  console.log(inputString)
-  console.log(parts)
-  if (parts.length < 2) {
-    return ''
+// model list
+export const models = [
+  {
+    huggingID: 'example/dummy-id',
+    url: 'https://example.com/dummy-url',
+    name: 'test model'
+  },
+  {
+    huggingID: 'potsawee/t5-large-generation-squad-QuestionAnswer',
+    url: 'https://storage.googleapis.com/aqg_onnx',
+    name: 't5 potsawee onnx'
   }
-  const [question, answer] = parts.map(part =>
-    part
-      .replace(/<.*?>/g, '') // Remove angle brackets
-      .replace(/\[.*?\]/g, '') // Remove square brackets
-      .trim()
-  )
+]
 
-  return `Question: ${question}\nAnswer: ${answer}`
-}
+export let generateQuestion: (text: string) => string | PromiseLike<string>
 
-export const generateQuestion = async (text: string) => {
-  const inputTokenIds = await tokenizer.encode(text)
+export const loadModel = async (modelName: string) => {
+  console.log(`loading model: ${modelName}`)
+  let model = models.find(m => m.name === modelName)
+  if (!model) {
+    console.log('no model found with the given name')
+    return
+  }
 
-  const finalOutputTokenIds = await model.generate(
-    inputTokenIds,
-    generationOptions,
-    generateProgress
-  )
-  let finalOutput = (await tokenizer.decode(finalOutputTokenIds, false)).trim()
-  finalOutput = processQA(finalOutput)
-  console.log(finalOutput)
-  return finalOutput
+  switch (modelName) {
+    case 't5 potsawee onnx':
+      await loadModelPotT5(model.huggingID, model.url)
+      generateQuestion = generateQuestionPotT5
+      break
+    case 'test model':
+      generateQuestion = async (text: string) => 'dummy answer'
+      for (let i = 1; i <= 100; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500 / i)) // speed up
+        let progress = i + '%'
+        loadProgress.set(progress)
+      }
+      break
+  }
 }

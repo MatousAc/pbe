@@ -19,7 +19,7 @@ theme.subscribe(val => (selectedTheme = val))
 
 <main class="skeleton flex flex-col {selectedTheme}">
   <Bar />
-  <div class="w-full md:w-4/5 text-xl mx-auto md:px-8 my-10 md:my-20 max-w-7xl">
+  <div class="w-full md:w-4/5 text-xl mx-auto md:px-8 my-12 md:mb-20 max-w-7xl">
     <slot />
   </div>
   <Footer />
