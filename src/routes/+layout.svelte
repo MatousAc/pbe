@@ -1,4 +1,5 @@
 <script lang="ts">
+import 'overlayscrollbars/overlayscrollbars.css'
 import '$/app.postcss'
 import '$/css/colors.css'
 import Bar from '$comp/Bar.svelte'

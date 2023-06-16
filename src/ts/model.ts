@@ -20,7 +20,6 @@ export const models = [
 export let generateQuestion: (text: string) => string | PromiseLike<string>
 
 export const loadModel = async (modelName: string) => {
-  console.log(`loading model: ${modelName}`)
   let model = models.find(m => m.name === modelName)
   if (!model) {
     console.log('no model found with the given name')

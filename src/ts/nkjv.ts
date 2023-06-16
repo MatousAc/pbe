@@ -8,7 +8,7 @@ export let nkjvData: {
 
 export const loadNKJV = async () => {
   try {
-    const response = await fetch(window.location + 'nkjv.json')
+    const response = await fetch(window.origin + '/nkjv.json')
     nkjvData = await response.json()
     // Process the loaded data
   } catch (error) {
@@ -77,6 +77,23 @@ export const getText = (
     let verse = parseInt(vrs)
     if (verse >= StartVerse && verse <= EndVerse) {
       text += ChapterData[verse] + ' '
+    }
+  }
+  return text
+}
+
+export const getTextForBook = (Book: string) => {
+  let text = `The Book of ${Book}\n`
+  const BookData = nkjvData[Book]
+  if (!BookData) return ''
+  for (let chapter in Object.keys(BookData)) {
+    if (chapter === '0') continue
+    const ChapterData = BookData[chapter]
+    text += `\nChapter ${chapter}\n`
+    for (let vrs in Object.keys(ChapterData)) {
+      if (vrs === '0') continue
+      let verse = parseInt(vrs)
+      text += `${verse}. ${ChapterData[verse]}\n`
     }
   }
   return text

@@ -31,8 +31,6 @@ export const loadModelPotT5 = async (huggingID: string, modelPath: string) => {
 
 const processQA = (inputString: string) => {
   const parts = inputString.split('[32100]') // split string on separator
-  console.log(inputString)
-  console.log(parts)
   if (parts.length < 2) {
     return ''
   }
