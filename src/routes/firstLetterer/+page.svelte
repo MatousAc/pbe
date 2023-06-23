@@ -34,11 +34,12 @@ const phraseSplit = () => {
 <H1>First Letterer</H1>
 <TextMedia reverse={true}>
   <textarea
+    autofocus
     slot="media"
     bind:value={input}
     class="w-full p-4 text-lg rounded-xl"
     placeholder="Paste your text here
-Joshua
+The Book of Joshua
 Chapter 1
 1 After the death of Moses the servant of the Lord
 the Lord said to Joshua son of Nun, Moses' aide:

@@ -93,7 +93,7 @@ export const getTextForBook = (Book: string) => {
     for (let vrs in Object.keys(ChapterData)) {
       if (vrs === '0') continue
       let verse = parseInt(vrs)
-      text += `${verse}. ${ChapterData[verse]}\n`
+      text += `${verse} ${ChapterData[verse]}\n`
     }
   }
   return text
