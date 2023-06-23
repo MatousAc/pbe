@@ -1,10 +1,10 @@
 <script lang="ts">
 import H1 from '$comp/H1.svelte'
-import H2 from '$comp/H2.svelte'
+import H2 from '$/components/H.svelte'
 import P from '$comp/P.svelte'
 import Select from '$comp/Select.svelte'
 import Button from '$comp/Button.svelte'
-import Row from '$/components/Row.svelte'
+import Row from '$comp/Row.svelte'
 import { loadProgress, models, loadModel, generateQuestion } from '$/ts/model'
 import { loadNKJV, getBooks, getChapters, getVerses, getText } from '$/ts/nkjv'
 

@@ -1,20 +1,29 @@
 <script>
 import { loadNKJV, getBooks, getTextForBook } from '$/ts/nkjv'
+import { generate, download } from '$/ts/firstLetterer'
 import Button from '$/components/Button.svelte'
 import TextMedia from '$/components/TextMedia.svelte'
-import H1 from '$comp/H1.svelte'
-import H2 from '$comp/H2.svelte'
+import H1 from '$/components/H1.svelte'
+import H from '$/components/H.svelte'
 import Select from '$comp/Select.svelte'
+import Col from '$comp/Col.svelte'
+// import pos from 'en-pos'
+// let Tag = pos.Tag
 
+// var t = new Tag(['this', 'is', 'my', 'sentence'])
+//   .initial() // initial dictionary and pattern based tagging
+//   .smooth().tags // further context based smoothing
+// console.log(t)
 let input = '',
   book = ''
-const download = () => {
-  console.log(input)
-}
 
-const lazyNKJV = async () => {
-  await loadNKJV()
-  input = getTextForBook(book)
+const phraseSplit = () => {
+  console.log('Splitting')
+  let tokens = input.split(' ')
+  // let tags = new Tag(tokens).initial().smooth().tags
+  // console.log(tags)
+  // let sentences = sentenceTokenizer.tokenize(input)
+  // console.log(sentences)
 }
 </script>
 
@@ -37,19 +46,29 @@ the Lord said to Joshua son of Nun, Moses' aide:
 . . ."
   />
   <div slot="text">
-    <H2>. . . or select a book:</H2>
-    {#await lazyNKJV() then}
-      <Select
-        justify="flex-start"
-        bind:value={book}
-        name="book"
-        options={getBooks()}
-        on:change={() => {
-          input = getTextForBook(book)
-        }}
-      />
-    {/await}
-    <Button onClick={download} class="my-0">Download</Button>
+    <H>Directions</H>
+    <Col align="flex-start">
+      <H n={3}>1. Paste or select text</H>
+      {#await loadNKJV() then}
+        <Select
+          justify="flex-start"
+          bind:value={book}
+          name="book"
+          options={getBooks()}
+          on:change={() => {
+            input = getTextForBook(book)
+          }}
+        />
+      {/await}
+      <H n={3}>2. Split into phrases (optional)</H>
+      <Button onClick={phraseSplit} class="max-w-xs my-0">Phrase Split</Button>
+      <H n={3}>3. Generate document</H>
+      <Button onClick={() => generate(input)} class="max-w-xs my-0">
+        Generate
+      </Button>
+      <H n={3}>4. Download</H>
+      <Button onClick={download} class="max-w-xs my-0">Download</Button>
+    </Col>
   </div>
 </TextMedia>
 

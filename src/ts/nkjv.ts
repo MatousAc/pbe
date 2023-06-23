@@ -12,7 +12,7 @@ export const loadNKJV = async () => {
     nkjvData = await response.json()
     // Process the loaded data
   } catch (error) {
-    console.log('Error fetching nkjv.json:', error)
+    console.log('Error fetching nkjv.json')
   }
 }
 
