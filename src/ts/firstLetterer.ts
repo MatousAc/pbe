@@ -24,18 +24,45 @@ const defaultSectionProperties = {
 
 const title = writable('result.docx')
 
-const splitToPhrases = (input: string): string[] => {
+interface Phrase {
+  text: string
+  isBook: boolean
+  isChapter: boolean
+  isFirst: boolean
+  isEmpty: boolean
+  verse: number
+  firstLetters?: string
+}
+
+const splitToPhrases = (input: string): Phrase[] => {
   let phrases = input.split('\n')
-  return phrases.map(phrase => phrase.trim())
+  phrases = phrases.map(phrase => phrase.trim())
+  let verse: number,
+    isFirst = false
+  return phrases.map(text => {
+    // remove and store verse number
+    let firstWord = Number(text.split(' ')[0])
+    if (!isNaN(firstWord)) {
+      verse = firstWord
+      isFirst = true
+      text = text.substring(text.indexOf(' ') + 1)
+    } else {
+      isFirst = false
+    }
+
+    return {
+      text: text,
+      isBook: text.toLowerCase().startsWith('the book of'),
+      isChapter: text.toLowerCase().startsWith('chapter'),
+      isFirst,
+      isEmpty: text === '',
+      verse
+    }
+  })
 }
-const isBookTitle = (phrase: string): boolean => {
-  return phrase.toLowerCase().startsWith('the book of')
-}
-const isChapter = (phrase: string): boolean => {
-  return phrase.toLowerCase().startsWith('chapter')
-}
-const needsConverting = (phrase: string): boolean => {
-  return !isBookTitle(phrase) && !isChapter(phrase) && phrase != ''
+
+const needsConverting = (phrase: Phrase): boolean => {
+  return !phrase.isBook && !phrase.isChapter && !phrase.isEmpty
 }
 
 const cleanWords = (words: string[]): string[] => {
@@ -44,36 +71,59 @@ const cleanWords = (words: string[]): string[] => {
   })
 }
 
-const addFirstLetters = (phrase: string): string => {
-  let words = phrase.split(' ')
+const addFirstLetters = (phrase: Phrase): Phrase => {
+  if (!needsConverting(phrase)) return phrase
+  let words = phrase.text.split(' ')
 
   words = cleanWords(words)
   let first_letters = words.map(word => {
-    return isNaN(Number(word)) ? word.substring(0, 1).toUpperCase() : `${word}`
+    return word.substring(0, 1).toUpperCase()
   })
 
-  return `${phrase}\t${first_letters.join('    ')}`
+  phrase.firstLetters = first_letters.join('    ')
+  return phrase
 }
 
-const styledParagraphs = (phrase: string): docx.Paragraph => {
-  if (isBookTitle(phrase)) {
+const styledParagraphs = (phrase: Phrase): docx.Paragraph => {
+  let { titleSz, chapterSz, verseSz } = {
+    titleSz: 20 * 2,
+    chapterSz: 16 * 2,
+    verseSz: 12 * 2
+  }
+  if (phrase.isEmpty) return new docx.Paragraph({})
+  // styling for documente header
+  if (phrase.isBook) {
     return new docx.Paragraph({
       heading: docx.HeadingLevel.TITLE,
       alignment: docx.AlignmentType.CENTER,
-      children: [new docx.TextRun({ text: phrase, size: 20 * 2 })]
+      children: [new docx.TextRun({ text: phrase.text, size: titleSz })]
     })
   }
-
-  if (isChapter(phrase)) {
+  // styling for chapter headers
+  if (phrase.isChapter) {
     return new docx.Paragraph({
       spacing: {
         after: 100
       },
-      children: [new docx.TextRun({ text: phrase, size: 16 * 2, bold: true })]
+      children: [
+        new docx.TextRun({ text: phrase.text, size: chapterSz, bold: true })
+      ]
     })
   }
 
   // normal verses
+  let children: docx.TextRun[] = []
+  let verseNum = new docx.TextRun({
+    text: `${phrase.verse} `,
+    bold: true,
+    size: verseSz
+  })
+  if (phrase.isFirst) children.push(verseNum)
+  children.push(new docx.TextRun({ text: phrase.text, size: verseSz }))
+  children.push(new docx.TextRun({ text: '\t', size: verseSz }))
+  if (phrase.isFirst) children.push(verseNum)
+  children.push(new docx.TextRun({ text: phrase.firstLetters, size: verseSz }))
+
   return new docx.Paragraph({
     spacing: {
       // line height
@@ -88,18 +138,16 @@ const styledParagraphs = (phrase: string): docx.Paragraph => {
         position: 7000
       }
     ],
-    children: [new docx.TextRun({ text: phrase, size: 12 * 2 })]
+    children: children
   })
 }
 
 export const generate = (input: string): void => {
   let phrases = splitToPhrases(input)
-  title.set(`${phrases[0]} - First Letters.docx`)
-  phrases = phrases.map(phrase => {
-    return needsConverting(phrase) ? addFirstLetters(phrase) : phrase
-  })
+  title.set(`${phrases[0].text} - First Letters.docx`)
+  phrases = phrases.map(phrase => addFirstLetters(phrase))
 
-  console.log(phrases[3])
+  console.log(phrases)
 
   const paragraphs = phrases.map(phrase => styledParagraphs(phrase))
 
