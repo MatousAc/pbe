@@ -11,11 +11,10 @@ const defaultSectionProperties = {
   type: docx.SectionType.CONTINUOUS,
   page: {
     margin: {
-      orientation: docx.PageOrientation.LANDSCAPE,
-      top: 1000,
-      right: 1000,
-      bottom: 1000,
-      left: 1000
+      top: 700,
+      right: 700,
+      bottom: 700,
+      left: 700
     },
     size: {
       orientation: docx.PageOrientation.LANDSCAPE
@@ -57,18 +56,6 @@ const addFirstLetters = (phrase: string): string => {
 }
 
 const styledParagraphs = (phrase: string): docx.Paragraph => {
-  const basicStyle = {
-    line: 1.5,
-    after: 0,
-    before: 0,
-    tabStops: [
-      {
-        type: docx.TabStopType.LEFT,
-        position: 7000
-      }
-    ]
-  }
-
   if (isBookTitle(phrase)) {
     return new docx.Paragraph({
       heading: docx.HeadingLevel.TITLE,
@@ -79,12 +66,28 @@ const styledParagraphs = (phrase: string): docx.Paragraph => {
 
   if (isChapter(phrase)) {
     return new docx.Paragraph({
-      children: [new docx.TextRun({ text: phrase, size: 16 * 2 })]
+      spacing: {
+        after: 100
+      },
+      children: [new docx.TextRun({ text: phrase, size: 16 * 2, bold: true })]
     })
   }
 
+  // normal verses
   return new docx.Paragraph({
-    ...basicStyle,
+    spacing: {
+      // line height
+      line: 375,
+      after: 0,
+      before: 0
+    },
+    tabStops: [
+      {
+        // align first letters
+        type: docx.TabStopType.LEFT,
+        position: 7000
+      }
+    ],
     children: [new docx.TextRun({ text: phrase, size: 12 * 2 })]
   })
 }
@@ -111,8 +114,6 @@ export const generate = (input: string): void => {
       ]
     })
   )
-
-  console.log(get(doc))
 }
 
 export const download = (): void => {
