@@ -97,6 +97,7 @@ const styledParagraphs = (phrase: Phrase): docx.Paragraph => {
   // styling for chapter headers
   if (phrase.isChapter) {
     return new docx.Paragraph({
+      spacing: { after: 100 },
       children: [
         new docx.TextRun({ text: phrase.text, size: chapterSz, bold: true })
       ]
