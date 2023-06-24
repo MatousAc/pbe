@@ -1,6 +1,6 @@
 import nlp from 'compromise'
 
-let min = 40,
+let min = 34,
   max = 75
 
 const isTooShort = (text: string, add: string): boolean => {

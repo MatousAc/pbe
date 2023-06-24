@@ -47,9 +47,11 @@ const addFirstLetters = (phrase: Phrase): Phrase => {
   let words = phrase.text.split(' ')
 
   words = cleanWords(words)
-  let first_letters = words.map(word => {
-    return word.substring(0, 1).toUpperCase()
-  })
+  let first_letters = words
+    .filter(w => w !== '')
+    .map(word => {
+      return word.substring(0, 1).toUpperCase()
+    })
 
   phrase.firstLetters = first_letters.join(spaces)
   return phrase
@@ -86,7 +88,7 @@ const styledParagraphs = (phrase: Phrase): docx.Paragraph => {
     verseSz: 12 * 2
   }
   if (phrase.isEmpty) return new docx.Paragraph({})
-  // styling for documente header
+  // styling for document header
   if (phrase.isBook) {
     return new docx.Paragraph({
       heading: docx.HeadingLevel.TITLE,
