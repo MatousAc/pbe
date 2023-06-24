@@ -1,39 +1,8 @@
 import { writable, get } from 'svelte/store'
+import type { Phrase } from './types'
 import * as docx from 'docx'
 
-const doc = writable(
-  new docx.Document({
-    sections: []
-  })
-)
-
-const defaultSectionProperties = {
-  type: docx.SectionType.CONTINUOUS,
-  page: {
-    margin: {
-      top: 700,
-      right: 700,
-      bottom: 700,
-      left: 700
-    },
-    size: {
-      orientation: docx.PageOrientation.LANDSCAPE
-    }
-  }
-}
-
-const title = writable('result.docx')
-
-interface Phrase {
-  text: string
-  isBook: boolean
-  isChapter: boolean
-  isFirst: boolean
-  isEmpty: boolean
-  verse: number
-  firstLetters?: string
-}
-
+// clause splitting
 const splitToPhrases = (input: string): Phrase[] => {
   let phrases = input.split('\n')
   phrases = phrases.map(phrase => phrase.trim())
@@ -61,16 +30,18 @@ const splitToPhrases = (input: string): Phrase[] => {
   })
 }
 
-const needsConverting = (phrase: Phrase): boolean => {
-  return !phrase.isBook && !phrase.isChapter && !phrase.isEmpty
-}
-
+// adding first letters
 const cleanWords = (words: string[]): string[] => {
   return words.map(word => {
     return word.replace(/[.,'‘’“”"\/#!$%\^&\*;:{}=\-_`~()]/g, '')
   })
 }
 
+const needsConverting = (phrase: Phrase): boolean => {
+  return !phrase.isBook && !phrase.isChapter && !phrase.isEmpty
+}
+
+const spaces = '    '
 const addFirstLetters = (phrase: Phrase): Phrase => {
   if (!needsConverting(phrase)) return phrase
   let words = phrase.text.split(' ')
@@ -80,9 +51,33 @@ const addFirstLetters = (phrase: Phrase): Phrase => {
     return word.substring(0, 1).toUpperCase()
   })
 
-  phrase.firstLetters = first_letters.join('    ')
+  phrase.firstLetters = first_letters.join(spaces)
   return phrase
 }
+
+// writing docx
+const doc = writable(
+  new docx.Document({
+    sections: []
+  })
+)
+
+const defaultSectionProperties = {
+  type: docx.SectionType.CONTINUOUS,
+  page: {
+    margin: {
+      top: 700,
+      right: 700,
+      bottom: 700,
+      left: 700
+    },
+    size: {
+      orientation: docx.PageOrientation.LANDSCAPE
+    }
+  }
+}
+
+const title = writable('result.docx')
 
 const styledParagraphs = (phrase: Phrase): docx.Paragraph => {
   let { titleSz, chapterSz, verseSz } = {
@@ -102,9 +97,6 @@ const styledParagraphs = (phrase: Phrase): docx.Paragraph => {
   // styling for chapter headers
   if (phrase.isChapter) {
     return new docx.Paragraph({
-      spacing: {
-        after: 100
-      },
       children: [
         new docx.TextRun({ text: phrase.text, size: chapterSz, bold: true })
       ]
@@ -113,15 +105,24 @@ const styledParagraphs = (phrase: Phrase): docx.Paragraph => {
 
   // normal verses
   let children: docx.TextRun[] = []
-  let verseNum = new docx.TextRun({
-    text: `${phrase.verse} `,
-    bold: true,
-    size: verseSz
-  })
-  if (phrase.isFirst) children.push(verseNum)
+  if (phrase.isFirst)
+    children.push(
+      new docx.TextRun({
+        text: `${phrase.verse} `,
+        bold: true,
+        size: verseSz
+      })
+    )
   children.push(new docx.TextRun({ text: phrase.text, size: verseSz }))
   children.push(new docx.TextRun({ text: '\t', size: verseSz }))
-  if (phrase.isFirst) children.push(verseNum)
+  if (phrase.isFirst)
+    children.push(
+      new docx.TextRun({
+        text: phrase.verse + spaces,
+        bold: true,
+        size: verseSz
+      })
+    )
   children.push(new docx.TextRun({ text: phrase.firstLetters, size: verseSz }))
 
   return new docx.Paragraph({
@@ -135,7 +136,7 @@ const styledParagraphs = (phrase: Phrase): docx.Paragraph => {
       {
         // align first letters
         type: docx.TabStopType.LEFT,
-        position: 7000
+        position: 8000
       }
     ],
     children: children

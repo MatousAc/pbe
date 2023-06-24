@@ -83,7 +83,7 @@ export const getText = (
 }
 
 export const getTextForBook = (Book: string) => {
-  let text = `The Book of ${Book}\n`
+  let text = `The Book of ${Book}`
   const BookData = nkjvData[Book]
   if (!BookData) return ''
   for (let chapter in Object.keys(BookData)) {

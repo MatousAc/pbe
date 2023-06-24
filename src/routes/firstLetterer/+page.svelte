@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { loadNKJV, getBooks, getTextForBook } from '$/ts/nkjv'
 import { generate, download } from '$/ts/firstLetterer'
 import Button from '$/components/Button.svelte'
@@ -7,23 +7,78 @@ import H1 from '$/components/H1.svelte'
 import H from '$/components/H.svelte'
 import Select from '$comp/Select.svelte'
 import Col from '$comp/Col.svelte'
-// import pos from 'en-pos'
-// let Tag = pos.Tag
+import nlp from 'compromise'
 
-// var t = new Tag(['this', 'is', 'my', 'sentence'])
-//   .initial() // initial dictionary and pattern based tagging
-//   .smooth().tags // further context based smoothing
-// console.log(t)
 let input = '',
-  book = ''
+  book = '',
+  min = 40,
+  max = 75
+
+const isTooShort = (text: string, add: string): boolean => {
+  if (text.length + add.length > max) return false
+  else return text.length < min || text.split(' ').length < 7
+}
+
+const clauser = (sentences: string[]): string[] => {
+  // let compromise handle most of the clause splitting
+  let smartClauses: string[] = sentences
+    .map(sentence => {
+      sentence = sentence.trim()
+      if (sentence.length < 50) return sentence
+
+      let doc = nlp(sentence)
+      return doc.clauses().out('array')
+    })
+    .flat()
+
+  // custom split on punctuation if needed
+  smartClauses = smartClauses
+    .map(clause => {
+      if (clause.length < max) return clause
+      let result: string[] = []
+      const punctRe = /[.,:;!?]/
+      let i = clause.search(punctRe)
+      while (i !== -1 && clause.length > max) {
+        result.push(clause.slice(0, i + 1))
+        clause = clause.slice(i + 1)
+        i = clause.search(punctRe)
+      }
+      result.push(clause.slice(0, i + 1))
+      return result
+    })
+    .flat()
+
+  // forcible clause split to tidy up
+  let shortClauses: string[] = []
+  smartClauses.forEach(clause => {
+    while (clause.length > max) {
+      const splitIndex = clause.slice(0, max).lastIndexOf(' ')
+      shortClauses.push(clause.slice(0, splitIndex))
+      clause = clause.slice(splitIndex + 1)
+    }
+    shortClauses.push(clause)
+  })
+  return shortClauses
+}
 
 const phraseSplit = () => {
-  console.log('Splitting')
-  let tokens = input.split(' ')
-  // let tags = new Tag(tokens).initial().smooth().tags
-  // console.log(tags)
-  // let sentences = sentenceTokenizer.tokenize(input)
-  // console.log(sentences)
+  let verses = input.split('\n')
+  verses = verses.map(verse => {
+    let sentences = verse.match(/[^\.\?!\"-]+[\.!\?\"-]+/g)
+    if (!sentences) sentences = [verse]
+    let clauses: string[] = clauser(sentences)
+
+    let phrases: string[] = []
+    while (clauses.length > 0) {
+      let phrase: string = clauses.shift() || ''
+      while (clauses.length > 0 && isTooShort(phrase, clauses[0])) {
+        phrase += ' ' + clauses.shift()
+      }
+      phrases.push(phrase.trim())
+    }
+    return phrases.join('\n')
+  })
+  input = verses.join('\n\n')
 }
 </script>
 
@@ -38,13 +93,11 @@ const phraseSplit = () => {
     slot="media"
     bind:value={input}
     class="w-full p-4 text-lg rounded-xl"
-    placeholder="Paste your text here
+    placeholder="Paste your text here like this
 The Book of Joshua
 Chapter 1
-1 After the death of Moses the servant of the Lord
-the Lord said to Joshua son of Nun, Moses' aide:
-2 “Moses my servant is dead.
-. . ."
+1 After the death of Moses the servant of the Lord the Lord said to Joshua son of Nun, Moses' aide:
+2 “Moses my servant is dead . . ."
   />
   <div slot="text">
     <H>Directions</H>
@@ -61,7 +114,8 @@ the Lord said to Joshua son of Nun, Moses' aide:
           }}
         />
       {/await}
-      <H n={3}>2. Split into phrases (optional)</H>
+      <H n={3}>2. Split into phrases</H>
+
       <Button onClick={phraseSplit} class="max-w-xs my-0">Phrase Split</Button>
       <H n={3}>3. Generate document</H>
       <Button onClick={() => generate(input)} class="max-w-xs my-0">
