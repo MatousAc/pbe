@@ -146,6 +146,15 @@ const styledParagraphs = (phrase: Phrase): docx.Paragraph => {
   })
 }
 
+const download = (): void => {
+  docx.Packer.toBlob(get(doc)).then(blob => {
+    var link = document.createElement('a')
+    link.href = window.URL.createObjectURL(blob)
+    link.download = get(title)
+    link.click()
+  })
+}
+
 export const generate = (input: string): void => {
   let phrases = splitToPhrases(input)
   title.set(`${phrases[0].text} - First Letters.docx`)
@@ -166,13 +175,6 @@ export const generate = (input: string): void => {
       ]
     })
   )
-}
 
-export const download = (): void => {
-  docx.Packer.toBlob(get(doc)).then(blob => {
-    var link = document.createElement('a')
-    link.href = window.URL.createObjectURL(blob)
-    link.download = get(title)
-    link.click()
-  })
+  download()
 }
