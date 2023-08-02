@@ -86,14 +86,11 @@ export const getTextForBook = (Book: string) => {
   let text = `The Book of ${Book}\n`
   const BookData = nkjvData[Book]
   if (!BookData) return ''
-  for (let chapter in Object.keys(BookData)) {
-    if (chapter === '0') continue
+  for (let chapter in BookData) {
     const ChapterData = BookData[chapter]
     text += `\nChapter ${chapter}`
-    for (let vrs in Object.keys(ChapterData)) {
-      if (vrs === '0') continue
-      let verse = parseInt(vrs)
-      text += `\n${verse} ${ChapterData[verse]}\n`
+    for (let vrs in ChapterData) {
+      text += `\n${vrs} ${ChapterData[vrs]}\n`
     }
   }
   return text
