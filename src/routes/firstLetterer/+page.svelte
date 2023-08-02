@@ -1,6 +1,6 @@
 <script>
 import { loadNKJV, getBooks, getTextForBook } from '$/ts/nkjv'
-import { generate, download } from '$/ts/firstLetterer'
+import { generate } from '$/ts/firstLetterer'
 import { phraseSplit } from '$/ts/clauser'
 import Button from '$/components/Button.svelte'
 import TextMedia from '$/components/TextMedia.svelte'
@@ -24,16 +24,20 @@ let input = '',
     slot="media"
     bind:value={input}
     class="w-full p-4 text-lg rounded-xl"
-    placeholder="Paste your text here like this
+    placeholder="The text should start in this format:
 The Book of Joshua
+
 Chapter 1
-1 After the death of Moses the servant of the Lord the Lord said to Joshua son of Nun, Moses' aide:
-2 “Moses my servant is dead . . ."
+1 After the death of Moses the servant of the LORD, it came to pass that the LORD spoke to Joshua the son of Nun, Moses' assistant, saying
+
+2 “Moses my servant is dead. Now therefore, arise, go over this Jordan, you and all this people, to the land which I am giving to them--the children of Israel.
+
+3 Every place that the sole of your foot will tread upon I have given you . . ."
   />
   <div slot="text">
     <H>Directions</H>
     <Col align="flex-start">
-      <H n={3}>1. Paste or select text</H>
+      <H n={3}>1. Choose text</H>
       {#await loadNKJV() then}
         <Select
           justify="flex-start"
@@ -55,12 +59,10 @@ Chapter 1
       >
         Phrase Split
       </Button>
-      <H n={3}>3. Generate document</H>
+      <H n={3}>3. Generate & download document</H>
       <Button onClick={() => generate(input)} class="max-w-xs my-0">
         Generate
       </Button>
-      <H n={3}>4. Download</H>
-      <Button onClick={download} class="max-w-xs my-0">Download</Button>
     </Col>
   </div>
 </TextMedia>
