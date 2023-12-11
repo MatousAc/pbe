@@ -12,7 +12,7 @@ let ul: HTMLUListElement
 // links
 const links = [
   { title: 'question generator', href: '/', target: '_self' },
-  { title: 'first letterer', href: '/firstLetterer', target: '_self' },
+  // { title: 'first letterer', href: '/firstLetterer', target: '_self' },
   { title: 'info', href: '/info', target: '_self' }
 ]
 
